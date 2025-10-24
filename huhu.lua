@@ -181,12 +181,45 @@ local function toggleSteal()
         stealStatus.TextColor3 = Color3.fromRGB(0, 255, 150)
         stealButton.BackgroundColor3 = Color3.fromRGB(0, 200, 150)
         
+        local character = Players.LocalPlayer.Character
+        if character then
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                if hrp:FindFirstChild("BodyVelocity") then
+                    hrp:FindFirstChild("BodyVelocity"):Destroy()
+                end
+                
+                local bv = Instance.new("BodyVelocity")
+                bv.Name = "StealVelocity"
+                bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                bv.Velocity = Vector3.new(0, 0, 0)
+                bv.Parent = hrp
+                
+                if hrp:FindFirstChild("BodyGyro") then
+                    hrp:FindFirstChild("BodyGyro"):Destroy()
+                end
+                
+                local bg = Instance.new("BodyGyro")
+                bg.Name = "StealGyro"
+                bg.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+                bg.P = 10000
+                bg.Parent = hrp
+            end
+        end
+        
         stealConnection = RunService.Heartbeat:Connect(function()
             local character = Players.LocalPlayer.Character
             if character then
                 local hrp = character:FindFirstChild("HumanoidRootPart")
                 if hrp then
                     hrp.CFrame = CFrame.new(-535.83, -7.00, 258.79)
+                    hrp.Velocity = Vector3.new(0, 0, 0)
+                    hrp.RotVelocity = Vector3.new(0, 0, 0)
+                    
+                    local humanoid = character:FindFirstChild("Humanoid")
+                    if humanoid then
+                        humanoid.PlatformStand = true
+                    end
                 end
             end
         end)
@@ -198,6 +231,24 @@ local function toggleSteal()
         if stealConnection then
             stealConnection:Disconnect()
             stealConnection = nil
+        end
+        
+        local character = Players.LocalPlayer.Character
+        if character then
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                if hrp:FindFirstChild("StealVelocity") then
+                    hrp:FindFirstChild("StealVelocity"):Destroy()
+                end
+                if hrp:FindFirstChild("StealGyro") then
+                    hrp:FindFirstChild("StealGyro"):Destroy()
+                end
+            end
+            
+            local humanoid = character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid.PlatformStand = false
+            end
         end
     end
 end
@@ -384,7 +435,7 @@ versionLabel.Size = UDim2.new(1, -10, 0, 20)
 versionLabel.Position = UDim2.new(0, 10, 1, -25)
 versionLabel.BackgroundTransparency = 1
 versionLabel.Font = Enum.Font.Gotham
-versionLabel.Text = "Steal a Brainrot ESP v1.2"
+versionLabel.Text = "Steal a Brainrot ESP v1.3"
 versionLabel.TextColor3 = Color3.fromRGB(120, 130, 150)
 versionLabel.TextSize = 10
 versionLabel.TextXAlignment = Enum.TextXAlignment.Right
