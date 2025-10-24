@@ -1,18 +1,13 @@
--- Steal a Brainrot ESP Script
--- Design matched to AnonHub UI
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
--- UI Colors matching AnonHub
 gui = Instance.new("ScreenGui")
 gui.Name = "BrainrotESP"
 gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Main Frame
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.Size = UDim2.new(0, 350, 0, 250)
@@ -22,7 +17,6 @@ mainFrame.BorderSizePixel = 0
 mainFrame.Visible = true
 mainFrame.Parent = gui
 
--- Top Bar
 local topBar = Instance.new("Frame")
 topBar.Name = "TopBar"
 topBar.Size = UDim2.new(1, 0, 0, 40)
@@ -31,7 +25,6 @@ topBar.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
 topBar.BorderSizePixel = 0
 topBar.Parent = mainFrame
 
--- Title
 local title = Instance.new("TextLabel")
 title.Name = "Title"
 title.Size = UDim2.new(1, -20, 1, 0)
@@ -44,7 +37,6 @@ title.TextSize = 14
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = topBar
 
--- Close Button
 local closeButton = Instance.new("TextButton")
 closeButton.Name = "CloseButton"
 closeButton.Size = UDim2.new(0, 30, 0, 30)
@@ -57,7 +49,6 @@ closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeButton.TextSize = 14
 closeButton.Parent = topBar
 
--- Content Frame
 local contentFrame = Instance.new("ScrollingFrame")
 contentFrame.Name = "ContentFrame"
 contentFrame.Size = UDim2.new(1, -20, 1, -60)
@@ -68,7 +59,6 @@ contentFrame.ScrollBarThickness = 4
 contentFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 150, 255)
 contentFrame.Parent = mainFrame
 
--- ESP Toggle Button
 local espButton = Instance.new("TextButton")
 espButton.Name = "ESPButton"
 espButton.Size = UDim2.new(1, 0, 0, 40)
@@ -81,7 +71,6 @@ espButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 espButton.TextSize = 14
 espButton.Parent = contentFrame
 
--- ESP Status
 local espStatus = Instance.new("TextLabel")
 espStatus.Name = "ESPStatus"
 espStatus.Size = UDim2.new(1, 0, 0, 20)
@@ -94,7 +83,6 @@ espStatus.TextSize = 12
 espStatus.TextXAlignment = Enum.TextXAlignment.Left
 espStatus.Parent = contentFrame
 
--- Base ESP Toggle Button
 local baseEspButton = Instance.new("TextButton")
 baseEspButton.Name = "BaseESPButton"
 baseEspButton.Size = UDim2.new(1, 0, 0, 40)
@@ -107,7 +95,6 @@ baseEspButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 baseEspButton.TextSize = 14
 baseEspButton.Parent = contentFrame
 
--- Base ESP Status
 local baseEspStatus = Instance.new("TextLabel")
 baseEspStatus.Name = "BaseESPStatus"
 baseEspStatus.Size = UDim2.new(1, 0, 0, 20)
@@ -120,13 +107,11 @@ baseEspStatus.TextSize = 12
 baseEspStatus.TextXAlignment = Enum.TextXAlignment.Left
 baseEspStatus.Parent = contentFrame
 
--- ESP Variables
 local espEnabled = false
 local espObjects = {}
 local baseEspEnabled = false
 local baseEspObjects = {}
 
--- Create ESP for a player
 local function createESP(player)
     if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
     
@@ -158,7 +143,6 @@ local function createESP(player)
     
     billboardGui.Parent = head
     
-    -- Create box around character
     local box = Instance.new("BoxHandleAdornment")
     box.Name = "ESP_Box_" .. player.Name
     box.Adornee = character:FindFirstChild("HumanoidRootPart")
@@ -169,7 +153,6 @@ local function createESP(player)
     box.Transparency = 0.7
     box.Parent = character:FindFirstChild("HumanoidRootPart")
     
-    -- Store ESP objects
     espObjects[player] = {
         billboard = billboardGui,
         box = box
@@ -177,7 +160,6 @@ local function createESP(player)
     
 end
 
--- Remove ESP for a player
 local function removeESP(player)
     if espObjects[player] then
         if espObjects[player].billboard then
@@ -191,33 +173,35 @@ local function removeESP(player)
     
 end
 
--- Create Base ESP
 local function createBaseESP()
     local localPlayer = Players.LocalPlayer
     if not localPlayer.Character then return end
     
-    -- Find the player's base in workspace
     local workspace = game:GetService("Workspace")
-    local basesFolder = workspace:FindFirstChild("Bases") or workspace:FindFirstChild("PlayerBases") or workspace
+    local playerBase = nil
     
-    -- Try to find the player's base
-    local playerBase = basesFolder:FindFirstChild(localPlayer.Name) or basesFolder:FindFirstChild(localPlayer.Name .. "'s Base")
+    for _, obj in ipairs(workspace:GetChildren()) do
+        if obj:IsA("Model") and obj.Name == "YOUR BASE" then
+            local ownerValue = obj:FindFirstChild("Owner", true)
+            if ownerValue and ownerValue.Value == localPlayer.Name then
+                playerBase = obj
+                break
+            end
+        end
+    end
     
     if not playerBase then
-        -- Try alternative search methods
-        for _, obj in ipairs(basesFolder:GetChildren()) do
-            if obj:IsA("Model") or obj:IsA("Folder") then
-                -- Check if this base belongs to the player
-                local owner = obj:FindFirstChild("Owner")
-                if owner and owner.Value == localPlayer then
-                    playerBase = obj
-                    break
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if obj:IsA("StringValue") and obj.Name == "Owner" and obj.Value == localPlayer.Name then
+                local parent = obj.Parent
+                while parent and parent ~= workspace do
+                    if parent.Name == "YOUR BASE" or parent:IsA("Model") then
+                        playerBase = parent
+                        break
+                    end
+                    parent = parent.Parent
                 end
-                -- Check by name matching
-                if string.find(obj.Name:lower(), localPlayer.Name:lower()) then
-                    playerBase = obj
-                    break
-                end
+                if playerBase then break end
             end
         end
     end
@@ -227,7 +211,6 @@ local function createBaseESP()
         return
     end
     
-    -- Apply gray highlight to all parts in the base
     local function highlightPart(part)
         if part:IsA("BasePart") then
             local highlight = Instance.new("Highlight")
@@ -243,22 +226,11 @@ local function createBaseESP()
         end
     end
     
-    -- Recursively highlight all parts
-    local function highlightDescendants(parent)
-        for _, child in ipairs(parent:GetDescendants()) do
-            highlightPart(child)
-        end
-    end
-    
-    highlightDescendants(playerBase)
-    
-    -- Also highlight the base model itself if it has parts
-    for _, child in ipairs(playerBase:GetChildren()) do
+    for _, child in ipairs(playerBase:GetDescendants()) do
         highlightPart(child)
     end
 end
 
--- Remove Base ESP
 local function removeBaseESP()
     for _, highlight in ipairs(baseEspObjects) do
         if highlight and highlight.Parent then
@@ -268,7 +240,6 @@ local function removeBaseESP()
     baseEspObjects = {}
 end
 
--- Toggle Base ESP
 local function toggleBaseESP()
     baseEspEnabled = not baseEspEnabled
     
@@ -285,7 +256,6 @@ local function toggleBaseESP()
     end
 end
 
--- Toggle ESP
 local function toggleESP()
     espEnabled = not espEnabled
     
@@ -294,7 +264,6 @@ local function toggleESP()
         espStatus.TextColor3 = Color3.fromRGB(0, 255, 150)
         espButton.BackgroundColor3 = Color3.fromRGB(0, 200, 150)
         
-        -- Add ESP to all players
         for _, player in ipairs(Players:GetPlayers()) do
             if player ~= Players.LocalPlayer then
                 createESP(player)
@@ -305,46 +274,38 @@ local function toggleESP()
         espStatus.TextColor3 = Color3.fromRGB(255, 80, 80)
         espButton.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
         
-        -- Remove ESP from all players
         for player in pairs(espObjects) do
             removeESP(player)
         end
     end
 end
 
--- Player Added
 local function onPlayerAdded(player)
     player.CharacterAdded:Connect(function()
         if espEnabled then
-            wait(1) -- Wait for character to fully load
+            wait(1)
             createESP(player)
         end
     end)
 end
 
--- Player Removing
 local function onPlayerRemoving(player)
     removeESP(player)
 end
 
--- Initialize
 local function init()
-    -- Connect events
     Players.PlayerAdded:Connect(onPlayerAdded)
     Players.PlayerRemoving:Connect(onPlayerRemoving)
     
-    -- Add ESP to existing players
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= Players.LocalPlayer then
             onPlayerAdded(player)
         end
     end
     
-    -- Toggle ESP with button
     espButton.MouseButton1Click:Connect(toggleESP)
     baseEspButton.MouseButton1Click:Connect(toggleBaseESP)
     
-    -- Toggle ESP with N key
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if not gameProcessed and input.KeyCode == Enum.KeyCode.N then
             toggleESP()
@@ -353,7 +314,6 @@ local function init()
         end
     end)
     
-    -- Make window draggable
     local dragging = false
     local dragInput, mousePos, framePos
     
@@ -389,19 +349,15 @@ local function init()
         end
     end)
     
-    -- Close button
     closeButton.MouseButton1Click:Connect(function()
         gui:Destroy()
     end)
     
-    -- Add to player GUI
     gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 end
 
--- Start the script
 init()
 
--- Add rounded corners to frames
 local function addRoundedCorners()
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 8)
@@ -426,7 +382,6 @@ end
 
 addRoundedCorners()
 
--- Add shadow effect
 local function addShadow(frame)
     local shadow = Instance.new("ImageLabel")
     shadow.Name = "Shadow"
@@ -444,7 +399,6 @@ end
 
 addShadow(mainFrame)
 
--- Add tooltip function
 local function addTooltip(button, text)
     local tooltip = Instance.new("TextLabel")
     tooltip.Name = "Tooltip"
@@ -474,12 +428,10 @@ local function addTooltip(button, text)
     end)
 end
 
--- Add tooltips
 addTooltip(espButton, "Toggle ESP for all players. Shows player names and hitboxes.")
 addTooltip(baseEspButton, "Toggle ESP for your base. Highlights your base in gray.")
 addTooltip(closeButton, "Close the ESP interface")
 
--- Add version info
 local versionLabel = Instance.new("TextLabel")
 versionLabel.Name = "Version"
 versionLabel.Size = UDim2.new(1, -10, 0, 20)
@@ -492,7 +444,6 @@ versionLabel.TextSize = 10
 versionLabel.TextXAlignment = Enum.TextXAlignment.Right
 versionLabel.Parent = mainFrame
 
--- Add credits
 local creditsLabel = Instance.new("TextLabel")
 creditsLabel.Name = "Credits"
 creditsLabel.Size = UDim2.new(1, -10, 0, 20)
@@ -505,7 +456,6 @@ creditsLabel.TextSize = 10
 creditsLabel.TextXAlignment = Enum.TextXAlignment.Right
 creditsLabel.Parent = mainFrame
 
--- Add keybind info
 local keybindInfo = Instance.new("TextLabel")
 keybindInfo.Name = "KeybindInfo"
 keybindInfo.Size = UDim2.new(1, -10, 0, 15)
@@ -518,7 +468,6 @@ keybindInfo.TextSize = 10
 keybindInfo.TextXAlignment = Enum.TextXAlignment.Left
 keybindInfo.Parent = topBar
 
--- Add animation to ESP button
 local function addButtonHoverEffect(button)
     local originalSize = button.Size
     local hoverSize = UDim2.new(originalSize.X.Scale * 1.02, 0, originalSize.Y.Scale * 1.1, 0)
@@ -535,7 +484,6 @@ end
 addButtonHoverEffect(espButton)
 addButtonHoverEffect(baseEspButton)
 
--- Add click effect to buttons
 local function addClickEffect(button)
     button.MouseButton1Down:Connect(function()
         TweenService:Create(button, TweenInfo.new(0.1), {Size = button.Size * 0.95}):Play()
@@ -553,20 +501,9 @@ end
 addClickEffect(espButton)
 addClickEffect(baseEspButton)
 
--- Add smooth fade in animation
 mainFrame.BackgroundTransparency = 1
 TweenService:Create(mainFrame, TweenInfo.new(0.5), {BackgroundTransparency = 0}):Play()
 
--- Add auto-cleanup on game close
 game:BindToClose(function()
     gui:Destroy()
 end)
-
--- Add error handling
-local success, err = pcall(function()
-    -- Main script code here
-end)
-
-if not success then
-    warn("Error in Steal a Brainrot ESP:", err)
-end
