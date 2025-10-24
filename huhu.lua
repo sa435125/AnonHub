@@ -215,11 +215,8 @@ local function toggleSteal()
                     hrp.CFrame = CFrame.new(-535.83, -7.00, 258.79)
                     hrp.Velocity = Vector3.new(0, 0, 0)
                     hrp.RotVelocity = Vector3.new(0, 0, 0)
-                    
-                    local humanoid = character:FindFirstChild("Humanoid")
-                    if humanoid then
-                        humanoid.PlatformStand = true
-                    end
+                    hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                    hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
                 end
             end
         end)
@@ -245,10 +242,6 @@ local function toggleSteal()
                 end
             end
             
-            local humanoid = character:FindFirstChild("Humanoid")
-            if humanoid then
-                humanoid.PlatformStand = false
-            end
         end
     end
 end
@@ -435,7 +428,7 @@ versionLabel.Size = UDim2.new(1, -10, 0, 20)
 versionLabel.Position = UDim2.new(0, 10, 1, -25)
 versionLabel.BackgroundTransparency = 1
 versionLabel.Font = Enum.Font.Gotham
-versionLabel.Text = "Steal a Brainrot ESP v1.3"
+versionLabel.Text = "Steal a Brainrot ESP v1.4"
 versionLabel.TextColor3 = Color3.fromRGB(120, 130, 150)
 versionLabel.TextSize = 10
 versionLabel.TextXAlignment = Enum.TextXAlignment.Right
