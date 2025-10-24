@@ -10,8 +10,8 @@ gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 350, 0, 250)
-mainFrame.Position = UDim2.new(0.5, -175, 0.5, -125)
+mainFrame.Size = UDim2.new(0, 350, 0, 220)
+mainFrame.Position = UDim2.new(0.5, -175, 0.5, -110)
 mainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
 mainFrame.BorderSizePixel = 0
 mainFrame.Visible = true
@@ -83,34 +83,34 @@ espStatus.TextSize = 12
 espStatus.TextXAlignment = Enum.TextXAlignment.Left
 espStatus.Parent = contentFrame
 
-local baseEspButton = Instance.new("TextButton")
-baseEspButton.Name = "BaseESPButton"
-baseEspButton.Size = UDim2.new(1, 0, 0, 40)
-baseEspButton.Position = UDim2.new(0, 0, 0, 90)
-baseEspButton.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
-baseEspButton.BorderSizePixel = 0
-baseEspButton.Font = Enum.Font.GothamBold
-baseEspButton.Text = "TOGGLE BASE ESP (B)"
-baseEspButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-baseEspButton.TextSize = 14
-baseEspButton.Parent = contentFrame
+local stealButton = Instance.new("TextButton")
+stealButton.Name = "StealButton"
+stealButton.Size = UDim2.new(1, 0, 0, 40)
+stealButton.Position = UDim2.new(0, 0, 0, 90)
+stealButton.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
+stealButton.BorderSizePixel = 0
+stealButton.Font = Enum.Font.GothamBold
+stealButton.Text = "TOGGLE STEAL (S)"
+stealButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+stealButton.TextSize = 14
+stealButton.Parent = contentFrame
 
-local baseEspStatus = Instance.new("TextLabel")
-baseEspStatus.Name = "BaseESPStatus"
-baseEspStatus.Size = UDim2.new(1, 0, 0, 20)
-baseEspStatus.Position = UDim2.new(0, 0, 0, 140)
-baseEspStatus.BackgroundTransparency = 1
-baseEspStatus.Font = Enum.Font.Gotham
-baseEspStatus.Text = "Base ESP: Disabled"
-baseEspStatus.TextColor3 = Color3.fromRGB(255, 80, 80)
-baseEspStatus.TextSize = 12
-baseEspStatus.TextXAlignment = Enum.TextXAlignment.Left
-baseEspStatus.Parent = contentFrame
+local stealStatus = Instance.new("TextLabel")
+stealStatus.Name = "StealStatus"
+stealStatus.Size = UDim2.new(1, 0, 0, 20)
+stealStatus.Position = UDim2.new(0, 0, 0, 140)
+stealStatus.BackgroundTransparency = 1
+stealStatus.Font = Enum.Font.Gotham
+stealStatus.Text = "Steal: Disabled"
+stealStatus.TextColor3 = Color3.fromRGB(255, 80, 80)
+stealStatus.TextSize = 12
+stealStatus.TextXAlignment = Enum.TextXAlignment.Left
+stealStatus.Parent = contentFrame
 
 local espEnabled = false
 local espObjects = {}
-local baseEspEnabled = false
-local baseEspObjects = {}
+local stealEnabled = false
+local stealConnection = nil
 
 local function createESP(player)
     if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
@@ -173,118 +173,35 @@ local function removeESP(player)
     
 end
 
-local function createBaseESP()
-    local localPlayer = Players.LocalPlayer
-    local character = localPlayer.Character
-    if not character then 
-        warn("No character found")
-        return 
-    end
+local function toggleSteal()
+    stealEnabled = not stealEnabled
     
-    local hrp = character:FindFirstChild("HumanoidRootPart")
-    if not hrp then 
-        warn("No HumanoidRootPart found")
-        return 
-    end
-    
-    local workspace = game:GetService("Workspace")
-    local plotsFolder = workspace:FindFirstChild("Plots")
-    
-    if not plotsFolder then
-        warn("Plots folder not found in workspace")
-        print("Workspace children:")
-        for _, child in ipairs(workspace:GetChildren()) do
-            print("  - " .. child.Name .. " (" .. child.ClassName .. ")")
-        end
-        return
-    end
-    
-    print("Found Plots folder, searching for base...")
-    print("Player position: " .. tostring(hrp.Position))
-    
-    local playerBase = nil
-    local closestPlot = nil
-    local closestDistance = math.huge
-    
-    for _, plot in ipairs(plotsFolder:GetChildren()) do
-        print("Checking plot: " .. plot.Name)
-        if plot:IsA("Model") or plot:IsA("Folder") then
-            for _, child in ipairs(plot:GetChildren()) do
-                print("  Child: " .. child.Name .. " (" .. child.ClassName .. ")")
-                if child:IsA("Model") and (string.find(child.Name, "Base") or string.find(child.Name, localPlayer.Name)) then
-                    print("  Found base: " .. child.Name)
-                    playerBase = child
-                    break
+    if stealEnabled then
+        stealStatus.Text = "Steal: Enabled"
+        stealStatus.TextColor3 = Color3.fromRGB(0, 255, 150)
+        stealButton.BackgroundColor3 = Color3.fromRGB(0, 200, 150)
+        
+        stealConnection = RunService.Heartbeat:Connect(function()
+            local character = Players.LocalPlayer.Character
+            if character then
+                local hrp = character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    local randomX = math.random(-100, 100)
+                    local randomZ = math.random(-100, 100)
+                    local randomY = math.random(200, 500)
+                    hrp.CFrame = CFrame.new(randomX, randomY, randomZ)
                 end
             end
-            if playerBase then break end
-        end
-    end
-    
-    if not playerBase then
-        warn("Could not find player base. Trying alternative method...")
-        for _, obj in ipairs(workspace:GetDescendants()) do
-            if obj:IsA("Model") and string.find(obj.Name:lower(), localPlayer.Name:lower()) and string.find(obj.Name:lower(), "base") then
-                print("Found base via alternative method: " .. obj.Name)
-                playerBase = obj
-                break
-            end
-        end
-    end
-    
-    if not playerBase then
-        warn("Could not find player base at all")
-        return
-    end
-    
-    print("Highlighting base: " .. playerBase.Name)
-    
-    local function highlightPart(part)
-        if part:IsA("BasePart") then
-            local highlight = Instance.new("Highlight")
-            highlight.Name = "BaseESP_Highlight"
-            highlight.Adornee = part
-            highlight.FillColor = Color3.fromRGB(150, 150, 150)
-            highlight.OutlineColor = Color3.fromRGB(200, 200, 200)
-            highlight.FillTransparency = 0.5
-            highlight.OutlineTransparency = 0.3
-            highlight.Parent = part
-            
-            table.insert(baseEspObjects, highlight)
-        end
-    end
-    
-    local partCount = 0
-    for _, child in ipairs(playerBase:GetDescendants()) do
-        highlightPart(child)
-        partCount = partCount + 1
-    end
-    
-    print("Highlighted " .. partCount .. " parts")
-end
-
-local function removeBaseESP()
-    for _, highlight in ipairs(baseEspObjects) do
-        if highlight and highlight.Parent then
-            highlight:Destroy()
-        end
-    end
-    baseEspObjects = {}
-end
-
-local function toggleBaseESP()
-    baseEspEnabled = not baseEspEnabled
-    
-    if baseEspEnabled then
-        baseEspStatus.Text = "Base ESP: Enabled"
-        baseEspStatus.TextColor3 = Color3.fromRGB(0, 255, 150)
-        baseEspButton.BackgroundColor3 = Color3.fromRGB(0, 200, 150)
-        createBaseESP()
+        end)
     else
-        baseEspStatus.Text = "Base ESP: Disabled"
-        baseEspStatus.TextColor3 = Color3.fromRGB(255, 80, 80)
-        baseEspButton.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
-        removeBaseESP()
+        stealStatus.Text = "Steal: Disabled"
+        stealStatus.TextColor3 = Color3.fromRGB(255, 80, 80)
+        stealButton.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
+        
+        if stealConnection then
+            stealConnection:Disconnect()
+            stealConnection = nil
+        end
     end
 end
 
@@ -336,13 +253,13 @@ local function init()
     end
     
     espButton.MouseButton1Click:Connect(toggleESP)
-    baseEspButton.MouseButton1Click:Connect(toggleBaseESP)
+    stealButton.MouseButton1Click:Connect(toggleSteal)
     
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if not gameProcessed and input.KeyCode == Enum.KeyCode.N then
             toggleESP()
-        elseif not gameProcessed and input.KeyCode == Enum.KeyCode.B then
-            toggleBaseESP()
+        elseif not gameProcessed and input.KeyCode == Enum.KeyCode.S then
+            toggleSteal()
         end
     end)
     
@@ -403,9 +320,9 @@ local function addRoundedCorners()
     buttonCorner.CornerRadius = UDim.new(0, 6)
     buttonCorner.Parent = espButton
     
-    local baseButtonCorner = Instance.new("UICorner")
-    baseButtonCorner.CornerRadius = UDim.new(0, 6)
-    baseButtonCorner.Parent = baseEspButton
+    local stealButtonCorner = Instance.new("UICorner")
+    stealButtonCorner.CornerRadius = UDim.new(0, 6)
+    stealButtonCorner.Parent = stealButton
     
     local closeCorner = Instance.new("UICorner")
     closeCorner.CornerRadius = UDim.new(0, 15)
@@ -461,7 +378,7 @@ local function addTooltip(button, text)
 end
 
 addTooltip(espButton, "Toggle ESP for all players. Shows player names and hitboxes.")
-addTooltip(baseEspButton, "Toggle ESP for your base. Highlights your base in gray.")
+addTooltip(stealButton, "Toggle Steal mode. Teleports you randomly in the air.")
 addTooltip(closeButton, "Close the ESP interface")
 
 local versionLabel = Instance.new("TextLabel")
@@ -494,7 +411,7 @@ keybindInfo.Size = UDim2.new(1, -10, 0, 15)
 keybindInfo.Position = UDim2.new(0, 10, 0, 25)
 keybindInfo.BackgroundTransparency = 1
 keybindInfo.Font = Enum.Font.Gotham
-keybindInfo.Text = "N: Player ESP | B: Base ESP"
+keybindInfo.Text = "N: Player ESP | S: Steal"
 keybindInfo.TextColor3 = Color3.fromRGB(0, 200, 255)
 keybindInfo.TextSize = 10
 keybindInfo.TextXAlignment = Enum.TextXAlignment.Left
@@ -514,7 +431,7 @@ local function addButtonHoverEffect(button)
 end
 
 addButtonHoverEffect(espButton)
-addButtonHoverEffect(baseEspButton)
+addButtonHoverEffect(stealButton)
 
 local function addClickEffect(button)
     button.MouseButton1Down:Connect(function()
@@ -531,7 +448,7 @@ local function addClickEffect(button)
 end
 
 addClickEffect(espButton)
-addClickEffect(baseEspButton)
+addClickEffect(stealButton)
 
 mainFrame.BackgroundTransparency = 1
 TweenService:Create(mainFrame, TweenInfo.new(0.5), {BackgroundTransparency = 0}):Play()
