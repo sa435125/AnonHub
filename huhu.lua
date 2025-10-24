@@ -178,36 +178,25 @@ local function createBaseESP()
     if not localPlayer.Character then return end
     
     local workspace = game:GetService("Workspace")
+    local plotsFolder = workspace:FindFirstChild("Plots")
+    
+    if not plotsFolder then
+        warn("Plots folder not found")
+        return
+    end
+    
     local playerBase = nil
     
-    for _, obj in ipairs(workspace:GetChildren()) do
-        if obj:IsA("Model") and obj.Name == "YOUR BASE" then
-            local ownerValue = obj:FindFirstChild("Owner", true)
-            if ownerValue and ownerValue.Value == localPlayer.Name then
-                playerBase = obj
-                break
-            end
+    for _, plot in ipairs(plotsFolder:GetChildren()) do
+        local baseModel = plot:FindFirstChild(localPlayer.Name .. "'s Base")
+        if baseModel then
+            playerBase = baseModel
+            break
         end
     end
     
     if not playerBase then
-        for _, obj in ipairs(workspace:GetDescendants()) do
-            if obj:IsA("StringValue") and obj.Name == "Owner" and obj.Value == localPlayer.Name then
-                local parent = obj.Parent
-                while parent and parent ~= workspace do
-                    if parent.Name == "YOUR BASE" or parent:IsA("Model") then
-                        playerBase = parent
-                        break
-                    end
-                    parent = parent.Parent
-                end
-                if playerBase then break end
-            end
-        end
-    end
-    
-    if not playerBase then
-        warn("Could not find player base")
+        warn("Could not find player base: " .. localPlayer.Name .. "'s Base")
         return
     end
     
