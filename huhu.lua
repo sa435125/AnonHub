@@ -176,49 +176,68 @@ end
 local function createBaseESP()
     local localPlayer = Players.LocalPlayer
     local character = localPlayer.Character
-    if not character then return end
+    if not character then 
+        warn("No character found")
+        return 
+    end
     
     local hrp = character:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
+    if not hrp then 
+        warn("No HumanoidRootPart found")
+        return 
+    end
     
     local workspace = game:GetService("Workspace")
     local plotsFolder = workspace:FindFirstChild("Plots")
     
     if not plotsFolder then
-        warn("Plots folder not found")
+        warn("Plots folder not found in workspace")
+        print("Workspace children:")
+        for _, child in ipairs(workspace:GetChildren()) do
+            print("  - " .. child.Name .. " (" .. child.ClassName .. ")")
+        end
         return
     end
+    
+    print("Found Plots folder, searching for base...")
+    print("Player position: " .. tostring(hrp.Position))
     
     local playerBase = nil
     local closestPlot = nil
     local closestDistance = math.huge
     
     for _, plot in ipairs(plotsFolder:GetChildren()) do
-        if plot:IsA("Model") then
-            local plotPrimaryPart = plot.PrimaryPart or plot:FindFirstChildWhichIsA("BasePart")
-            if plotPrimaryPart then
-                local distance = (hrp.Position - plotPrimaryPart.Position).Magnitude
-                if distance < closestDistance then
-                    closestDistance = distance
-                    closestPlot = plot
+        print("Checking plot: " .. plot.Name)
+        if plot:IsA("Model") or plot:IsA("Folder") then
+            for _, child in ipairs(plot:GetChildren()) do
+                print("  Child: " .. child.Name .. " (" .. child.ClassName .. ")")
+                if child:IsA("Model") and (string.find(child.Name, "Base") or string.find(child.Name, localPlayer.Name)) then
+                    print("  Found base: " .. child.Name)
+                    playerBase = child
+                    break
                 end
             end
+            if playerBase then break end
         end
     end
     
-    if closestPlot then
-        for _, child in ipairs(closestPlot:GetChildren()) do
-            if child:IsA("Model") and string.find(child.Name, "Base") then
-                playerBase = child
+    if not playerBase then
+        warn("Could not find player base. Trying alternative method...")
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if obj:IsA("Model") and string.find(obj.Name:lower(), localPlayer.Name:lower()) and string.find(obj.Name:lower(), "base") then
+                print("Found base via alternative method: " .. obj.Name)
+                playerBase = obj
                 break
             end
         end
     end
     
     if not playerBase then
-        warn("Could not find player base")
+        warn("Could not find player base at all")
         return
     end
+    
+    print("Highlighting base: " .. playerBase.Name)
     
     local function highlightPart(part)
         if part:IsA("BasePart") then
@@ -235,9 +254,13 @@ local function createBaseESP()
         end
     end
     
+    local partCount = 0
     for _, child in ipairs(playerBase:GetDescendants()) do
         highlightPart(child)
+        partCount = partCount + 1
     end
+    
+    print("Highlighted " .. partCount .. " parts")
 end
 
 local function removeBaseESP()
@@ -447,7 +470,7 @@ versionLabel.Size = UDim2.new(1, -10, 0, 20)
 versionLabel.Position = UDim2.new(0, 10, 1, -25)
 versionLabel.BackgroundTransparency = 1
 versionLabel.Font = Enum.Font.Gotham
-versionLabel.Text = "Steal a Brainrot ESP v1.1"
+versionLabel.Text = "Steal a Brainrot ESP v1.2"
 versionLabel.TextColor3 = Color3.fromRGB(120, 130, 150)
 versionLabel.TextSize = 10
 versionLabel.TextXAlignment = Enum.TextXAlignment.Right
