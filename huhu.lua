@@ -175,7 +175,11 @@ end
 
 local function createBaseESP()
     local localPlayer = Players.LocalPlayer
-    if not localPlayer.Character then return end
+    local character = localPlayer.Character
+    if not character then return end
+    
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
     
     local workspace = game:GetService("Workspace")
     local plotsFolder = workspace:FindFirstChild("Plots")
@@ -186,17 +190,33 @@ local function createBaseESP()
     end
     
     local playerBase = nil
+    local closestPlot = nil
+    local closestDistance = math.huge
     
     for _, plot in ipairs(plotsFolder:GetChildren()) do
-        local baseModel = plot:FindFirstChild(localPlayer.Name .. "'s Base")
-        if baseModel then
-            playerBase = baseModel
-            break
+        if plot:IsA("Model") then
+            local plotPrimaryPart = plot.PrimaryPart or plot:FindFirstChildWhichIsA("BasePart")
+            if plotPrimaryPart then
+                local distance = (hrp.Position - plotPrimaryPart.Position).Magnitude
+                if distance < closestDistance then
+                    closestDistance = distance
+                    closestPlot = plot
+                end
+            end
+        end
+    end
+    
+    if closestPlot then
+        for _, child in ipairs(closestPlot:GetChildren()) do
+            if child:IsA("Model") and string.find(child.Name, "Base") then
+                playerBase = child
+                break
+            end
         end
     end
     
     if not playerBase then
-        warn("Could not find player base: " .. localPlayer.Name .. "'s Base")
+        warn("Could not find player base")
         return
     end
     
@@ -427,7 +447,7 @@ versionLabel.Size = UDim2.new(1, -10, 0, 20)
 versionLabel.Position = UDim2.new(0, 10, 1, -25)
 versionLabel.BackgroundTransparency = 1
 versionLabel.Font = Enum.Font.Gotham
-versionLabel.Text = "Steal a Brainrot ESP v1.0"
+versionLabel.Text = "Steal a Brainrot ESP v1.1"
 versionLabel.TextColor3 = Color3.fromRGB(120, 130, 150)
 versionLabel.TextSize = 10
 versionLabel.TextXAlignment = Enum.TextXAlignment.Right
