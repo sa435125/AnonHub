@@ -186,10 +186,7 @@ local function toggleSteal()
             if character then
                 local hrp = character:FindFirstChild("HumanoidRootPart")
                 if hrp then
-                    local randomX = math.random(-100, 100)
-                    local randomZ = math.random(-100, 100)
-                    local randomY = math.random(200, 500)
-                    hrp.CFrame = CFrame.new(randomX, randomY, randomZ)
+                    hrp.CFrame = CFrame.new(-535.83, -7.00, 258.79)
                 end
             end
         end)
